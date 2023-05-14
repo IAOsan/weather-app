@@ -8,11 +8,12 @@ function Gauge({ value, label, min, max, showLabels }) {
 		const range = max - min;
 		const correctedStartValue = value - min;
 		const percentage = correctedStartValue / range;
+		const template = (deg) => `${deg}deg`;
 
-		if (value < min) return 0;
-		if (value > max) return 180;
+		if (value < min) setProgress(template(0));
+		if (value > max) setProgress(template(180));
 
-		setProgress(`${180 * percentage}deg`);
+		setProgress(template(180 * percentage));
 	}, [max, min, value]);
 
 	return (

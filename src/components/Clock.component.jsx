@@ -13,12 +13,17 @@ function Clock() {
 		month: 'long',
 		day: 'numeric',
 	});
-	// FIXME minutos desfasados, hay que restar los segundos actuales y luego los 60 segundo sel interval
+
 	useEffect(() => {
-		setInterval(() => {
+		const ms = (60 - date.getSeconds()) * 1000;
+		const interval = setInterval(() => {
 			setDate(new Date());
-		}, 1000);
-	}, []);
+		}, ms);
+
+		return () => {
+			clearInterval(interval);
+		};
+	}, [date]);
 
 	return (
 		<article className='clock'>

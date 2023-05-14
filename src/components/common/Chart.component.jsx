@@ -20,7 +20,7 @@ function Chart({
 	};
 
 	useEffect(() => {
-		if (!labels || !series) return;
+		if (!labels && !series) return;
 
 		const types = {
 			line: LineChart,

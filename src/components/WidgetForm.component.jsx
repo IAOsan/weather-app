@@ -1,89 +1,104 @@
 import { useState, useEffect } from 'react';
 import { getClassName } from '../utils';
 import { SearchIcon, GpsIcon } from '../icons';
+import { Validator, string } from '../utils';
+import { useAppContext } from '../context/App.context';
+import geolocationService from '../services/geolocation.service';
 
 function WidgetForm() {
+	const { getLocation, isLoading } = useAppContext();
 	const [formData, setFormData] = useState({
 		query: '',
 	});
 	const [isSubmitted, setIsSubmitted] = useState(false);
-	const [error, setError] = useState(null);
+	const [errors, setErrors] = useState({});
 	const inputClassname = getClassName('form__control form__control--icon', {
-		'form__control--invalid': !!error,
+		'form__control--invalid': Object.keys(errors).length,
 	});
 
-	// useEffect(() => {
-	// 	if (isSubmitted && !error) {
-	// 		setIsSubmitted(false);
-	// 		(async () => {
-	// 			try {
-	// 				await getLocation(formData.query);
-	// 			} catch (error) {
-	// 				setError(error.message);
-	// 			}
-	// 		})();
-	// 	}
-	// }, [isSubmitted, error, formData, getLocation]);
+	useEffect(() => {
+		if (isSubmitted && !Object.keys(errors).length) {
+			setIsSubmitted(false);
+			(async () => {
+				try {
+					await getLocation(formData.query);
+				} catch (error) {
+					setErrors({ query: error.message });
+				}
+			})();
+		}
+	}, [isSubmitted, errors, getLocation, formData]);
 
-	// function validate(data) {
-	// 	const error = {
-	// 		query: new Validator(data.query)
-	// 			.label('Location')
-	// 			.string()
-	// 			.trim()
-	// 			.required('Please enter the name of a location or an address')
-	// 			.error,
-	// 	};
-	// 	return error.query;
-	// }
+	function validate(data) {
+		const errors = {
+			query: new Validator(data.query)
+				.label('Location')
+				.string()
+				.trim()
+				.required('Please enter the name of a location or an address')
+				.error,
+		};
 
-	// function handleChange({ target }) {
-	// 	if (!!error) setError(null);
-	// 	setFormData((prevState) => ({
-	// 		...prevState,
-	// 		[target.name]: target.value,
-	// 	}));
-	// }
+		return {
+			...(errors.query && { query: errors.query }),
+		};
+	}
 
-	// async function handleSubmit(e) {
-	// 	e.preventDefault();
+	function handleChange({ target }) {
+		if (errors) {
+			setErrors({});
+			setIsSubmitted(false);
+		}
 
-	// 	const error = validate(formData);
+		setFormData((prevState) => ({
+			...prevState,
+			[target.name]: target.value,
+		}));
+	}
 
-	// 	if (error) {
-	// 		setError(error);
-	// 		return;
-	// 	}
+	async function handleSubmit(e) {
+		e.preventDefault();
 
-	// 	setFormData((prevState) => ({
-	// 		query: string(prevState.query).trim(),
-	// 	}));
-	// 	setIsSubmitted(true);
-	// }
+		const errors = validate(formData);
 
-	// async function handleGeolocation() {
-	// 	setError(null);
-	// 	try {
-	// 		const coords = await geolocationService.getCurrentPosition();
-	// 		await getLocation(`${coords.latitude}, ${coords.longitude}`);
-	// 	} catch (error) {
-	// 		setError(error.message);
-	// 	}
-	// }
+		if (Object.keys(errors).length) {
+			setErrors(errors);
+			return;
+		}
+
+		setFormData((prevState) => ({
+			query: string(prevState.query).trim(),
+		}));
+		setIsSubmitted(true);
+	}
+
+	async function handleGeolocation() {
+		setErrors({});
+		try {
+			const response = await geolocationService.getCurrentPosition();
+			await getLocation(`${response.latitude},${response.longitude}`);
+		} catch (error) {
+			setErrors({ query: error.message });
+		}
+	}
 
 	return (
-		<form className='form mb-40'>
+		<form onSubmit={handleSubmit} className='form mb-40'>
 			<div className='form__group'>
 				<span className='icon icon--md icon--input'>
 					<SearchIcon />
 				</span>
 				<input
+					onChange={handleChange}
 					name='query'
+					value={formData.query}
 					type='text'
 					placeholder='Enter location...'
 					className={inputClassname}
+					disabled={isLoading}
 				/>
 				<button
+					onClick={handleGeolocation}
 					className='button button--icon button--input'
 					type='button'
 					data-testid='geolocation-button'
@@ -93,9 +108,9 @@ function WidgetForm() {
 					</span>
 					<span className='sr-only'>Get current position</span>
 				</button>
-				{error && (
+				{errors.query && (
 					<small className='form__invalid-feedback hidden'>
-						{error}
+						{errors.query}
 					</small>
 				)}
 			</div>

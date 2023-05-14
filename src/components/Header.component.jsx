@@ -1,8 +1,15 @@
 import Clock from './Clock.component';
 import Toggler from './common/Toggler.component';
 import { GithubIcon } from '../icons';
+import { useAppContext } from '../context/App.context';
 
 function Header() {
+	const { changeUnitSystem } = useAppContext();
+
+	function handleToggleUnits(e) {
+		changeUnitSystem(e.target.checked);
+	}
+
 	return (
 		<header className='header flex flex-jc-sb mb-40'>
 			<Clock />
@@ -12,10 +19,10 @@ function Header() {
 						on: () => <b>°C</b>,
 						off: () => <b>°F</b>,
 					}}
-					onChange={() => {}}
+					onChange={handleToggleUnits}
 				/>
 				<a
-					href='/github' //FIXME
+					href='https://github.com/IAOsan/weather-app.git'
 					target='_blank'
 					rel='noreferrer noopener'
 					className='source d-block'
