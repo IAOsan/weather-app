@@ -2,7 +2,7 @@ import {
 	formatCurrentWeather,
 	formatHourlyWeather,
 	formatDailyWeather,
-} from './appreducerUtils';
+} from './appReducerUtils';
 
 export const actionTypes = {
 	START_LOADING: 'START_LOADING',

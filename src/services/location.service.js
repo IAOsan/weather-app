@@ -3,7 +3,7 @@ import { date, number } from '../utils';
 import httpService from './http.service';
 
 const baseUrl = 'https://api.opencagedata.com/geocode/v1/json';
-const apikey = '8a5d0586ea794b2c8c9cfad7ba1f31e5';
+const apikey = import.meta.env.VITE_GEOCODING_API;
 const errors = {
 	400: 'Sorry, the location cannot be determined, please try another',
 	402: 'Sorry, try again later',
